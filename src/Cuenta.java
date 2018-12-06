@@ -6,8 +6,8 @@ import java.math.BigDecimal;
  */
 public class Cuenta {
 
-    private String nombre;
-    private BigDecimal saldo;
+    private String nombre;  //El nombre del cliente
+    private BigDecimal saldo;   //El saldo del cliente
 
     public Cuenta(){}
 

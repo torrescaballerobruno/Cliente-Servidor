@@ -9,7 +9,7 @@ import java.util.InputMismatchException;
 import javax.crypto.Cipher;
 
 /**
- *
+ *Clase que se encarga del manejo de los clientes
  * @author bruno
  */
 public class Conexion extends Thread{
@@ -19,18 +19,26 @@ public class Conexion extends Thread{
     private DataInputStream dis = null;
     private DataOutputStream dos = null;
     
+    /**
+     * Constructor de conexion, que recibe lo necesario para tratar al cliente
+     * @param cliente conexion del cliente
+     * @param cuenta cuenta sobre la cual se van a efectuar las operaciones
+     * @param clave clave con la que se encripta y desencripta
+     */
     public Conexion(Socket cliente, Cuenta cuenta,Key clave){
         this.cliente = cliente;
         this.cuenta = cuenta;
         this.clave = clave;
-        try{
+        try{//Se obtienen los flujos del socket
             this.dis = new DataInputStream(cliente.getInputStream());
             this.dos = new DataOutputStream(cliente.getOutputStream());
         }catch(IOException e){
             System.err.println("Error: "+e.getMessage());
         }
     }
-
+    /**
+     * Todo el tratamiento del cliente
+     */
     @Override
     public void run(){
         String cadena = null;
@@ -40,34 +48,45 @@ public class Conexion extends Thread{
             //Se manda el mensaje de bienvenida
             escribirCadena("\n\tBienvenido:   "+cuenta.getNombre());
             do{
+                //Se separa la cadena cadena recibida
                 cadenas = obtenerCadena().split(" ");
                 cadenas[0] = cadenas[0].toUpperCase();
+                //Se checa cual fue el comando que envio el cliente
                 switch(cadenas[0]){
                     case "CONSULTA":
+                        //se manda el saldo que tiene la cuenta
                         escribirCadena("Saldo: "+cuenta.getSaldo());
                         break;
                     case "DEPOSITAR":
                         try{
+                            //Se checa que el segundo parametro si haya sido un numero
                             monto = new BigDecimal(cadenas[1]);
                         }catch(InputMismatchException | IndexOutOfBoundsException e){
-                            escribirCadena("Error al retirar");
+                            escribirCadena("Error al depositar");
                             break;
                         }
-
+                        
+                        //Le agregamos la cantidad a la cuenta
                         cuenta.setSaldo(cuenta.getSaldo().add(new BigDecimal(cadenas[1])));
+                        //Le retornamos el nuevo saldo
                         escribirCadena("Operacion Realizada con exito\nNuevo Saldo: "+cuenta.getSaldo());
                         break;
                     case "RETIRAR": 
+                        //Obtenemos el saldo de la cuenta
                         saldo = cuenta.getSaldo();
                         monto = null;
                         try{
+                            //Checamos que el segundo parametro si haya sido un numero
                             monto = new BigDecimal(cadenas[1]);
                         }catch(InputMismatchException | IndexOutOfBoundsException e){
                             escribirCadena("Error al retirar");
                             break;
                         }
+                        //Verificamos que tenga el saldo suficiente
                         if(saldo.compareTo(monto) >= 0 ){
+                            //Retiramos lo especificado
                             cuenta.setSaldo(cuenta.getSaldo().subtract(new BigDecimal(cadenas[1])));
+                            //Retornamos el nuevo saldo
                             escribirCadena("Operacion Realizada con exito\nNuevo Saldo: "+cuenta.getSaldo());
                         }else{
                             escribirCadena("No cuenta con saldo suficiente");
@@ -75,11 +94,15 @@ public class Conexion extends Thread{
                         
                         break;
                     case "SALIR":
+                        //Log del servidor para ver quien termino la sesion
                         System.out.println("Conexion terminada: "+cliente.getInetAddress());
+                        //Mandamos el salir para terminar la conexion en el cliente
                         escribirCadena("SALIR");
+                        //Se termina la conexion en el servidor
                         cliente.close();
                         break;
                     default:
+                        //Por si se equivoca
                         escribirCadena("Operacion no valida");
                         break;
                 }
@@ -88,13 +111,19 @@ public class Conexion extends Thread{
         }catch(Exception e){
         }
     }
+    /**
+     * Se encarga de cifrar y enviar la cadena 
+     * @param cadena cadena sin cifrar que se va a enviar
+     */
     public void escribirCadena(String cadena){
         Cipher cifrar = null;
         byte[] textoCifrado = null;
         try{
+            //se cifra la cadena
             cifrar = Cipher.getInstance("DES/ECB/PKCS5Padding");
             cifrar.init(Cipher.ENCRYPT_MODE, clave);
             textoCifrado = cifrar.doFinal(cadena.getBytes("UTF8"));
+            //Se escribe la cadena en el flujo
             dos.write(textoCifrado);
         }catch(Exception e){
             System.err.println("Error: "+e.getMessage());
