@@ -8,12 +8,13 @@ public class Cuenta {
 
     private String nombre;  //El nombre del cliente
     private BigDecimal saldo;   //El saldo del cliente
-
+    private String pass;
     public Cuenta(){}
 
-    public Cuenta(String nombre,BigDecimal saldo){      //Clase que va a tener el nombre del usuario y el saldo
+    public Cuenta(String nombre,BigDecimal saldo,String pass){      //Clase que va a tener el nombre del usuario y el saldo
         this.nombre = nombre;
         this.saldo = saldo;
+        this.pass = pass;
     }
 
     public String getNombre() {
@@ -30,6 +31,14 @@ public class Cuenta {
 
     public void setSaldo(BigDecimal saldo) {
         this.saldo = saldo;
+    }
+
+    public String getPass() {
+        return pass;
+    }
+
+    public void setPass(String pass) {
+        this.pass = pass;
     }
 
 }

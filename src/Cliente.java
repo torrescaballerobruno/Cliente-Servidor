@@ -37,6 +37,13 @@ public class Cliente {
             dos = new DataOutputStream( s.getOutputStream());
             dis = new DataInputStream( s.getInputStream() );
             //Se imprime en pantalla el primer mensaje que envia el servidor
+            
+            System.out.print("Ingrese Usuario:\t");
+            String usr = sc.nextLine();
+            System.out.print("Ingrese Contraseña:\t");
+            String pass = sc.nextLine();
+            Cliente.enviarMensaje((usr+"_"+pass).getBytes(), dos, clave);
+            
             System.out.println(Cliente.obtenerCadena(dis, clave));
             do{
                 //Se imprime el menu de con las operaciones que se pueden realizar
